@@ -5,26 +5,25 @@ namespace GameObjects {
     /**
      * A grid space.
      */
-    public class Grid {
-        private int rows  { get; set; }
-        private int cols  { get; set; }
+    public class Grid : MonoBehaviour {
+        public int rows;
+        public int cols;
+        public GameObject tile;
         
-        public GridCell[,] cells { get; set; }
-        
-        public Grid(int rows, int cols, GameObject prefab) {
-            this.rows = rows;
-            this.cols = cols;
-            cells = new GridCell[this.rows, this.cols];
+        private GridCell[,] cells { get; set; }
 
-            InsertAll(prefab);
+        void Start() {
+            cells = new GridCell[rows, cols];
+            InsertAll(tile);
+            DrawGrid();
         }
         
         // Draws the current grid using whatever is in each GridCell
-        public void DrawGrid() {
+        public void DrawGrid(int xOffset=0, int yOffset=0) {
             for (int x = 0; x < rows; x++) {
                 for (int y = 0; y < cols; y++) {
-                    cells[x, y].Contents.transform.position = new Vector3(x, y, 0);
-                    Object.Instantiate(cells[x, y].Contents);
+                    cells[x, y].Contents.transform.position = new Vector3(x + xOffset, y + yOffset, 0);
+                    Instantiate(cells[x, y].Contents);
                 }
             }
         }
