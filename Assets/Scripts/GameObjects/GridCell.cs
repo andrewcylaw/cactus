@@ -9,7 +9,7 @@ namespace GameObjects {
     public class GridCell {
         public GameObject Contents { get; set; }
 
-        public GridCell(GameObject contents = null) {
+        public GridCell(GameObject contents) {
             Contents = contents;
         }
         

@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using GameLogic;
 using GameObjects;
 using UnityEngine;
 
@@ -7,19 +7,19 @@ namespace Controls {
     public class Draggable : MonoBehaviour {
         
         public Camera mainCamera;
-        
+
+        private GameManager gameManager;
         private static ContactFilter2D noFilter;
         private Vector3 initClickPosition;
         private Collider2D mainCollider;
-        private List<Collider2D> overlap;
-        
+
         // Detects whether something is being highlighted (and what it is)
-        private (GridCell, ColliderDistance2D) prevOverlappedCell;
+        private (GridCell, float) prevOverlappedCell;
 
 
         public void Start() {
+            gameManager = FindObjectOfType<GameManager>();
             mainCollider = GetComponent<Collider2D>();
-            overlap = new List<Collider2D>();
             noFilter = new ContactFilter2D();
         }
 
@@ -28,31 +28,38 @@ namespace Controls {
         }
 
         public void OnMouseDrag() {
+            gameManager.gameGrid.PrintTags();
+            
+            List<Collider2D> overlap = new List<Collider2D>();
             transform.position = GetMousePosition() + initClickPosition;
             
             // Detect the GridCell that this object is currently hovering over
             // TODO - filter that checks for the class GridCell and other game logic later
             int numOverlap = mainCollider.OverlapCollider(noFilter.NoFilter(), overlap);
             
-            // Find largest overlap
             // send gridcell for dehighlight/newhighlight etc
-            (GridCell, ColliderDistance2D) newOverlappedCell = default; 
+            (GridCell, float) newOverlappedCell = default; 
             if (numOverlap > 0) {
-                for (int i = 0; i < numOverlap; i++) {
-                    ColliderDistance2D overlapAmount = mainCollider.Distance(overlap[i]);
                 
-                    if (prevOverlappedCell.Item1 == null || overlapAmount.distance < prevOverlappedCell.Item2.distance) {
-                        newOverlappedCell = (overlap[i].GetComponent<GridCell>(), overlapAmount);
+                for (int i = 0; i < numOverlap; i++) {
+                    float overlapAmount = mainCollider.Distance(overlap[i]).distance;
+                
+                    // Find the Collider2D with the most overlap
+                    if (prevOverlappedCell.Item1 == null || overlapAmount < prevOverlappedCell.Item2 && overlapAmount < newOverlappedCell.Item2) {
+                        newOverlappedCell = (gameManager.gameGrid.GetGridCell(overlap[i]), overlapAmount);
                     }
                 }
             
-                // Now we have our GridCell with the highest overlap: select the new one, and deselect the old one
-                // if it exists. Also guaranteed at least 1 overlap here
+                // Deselect our old cell
                 if (prevOverlappedCell.Item1 != null) {
-                    prevOverlappedCell.Item1.Contents.GetComponent<SpriteRenderer>().color = Color.clear;
+                    prevOverlappedCell.Item1.Contents.GetComponent<SpriteRenderer>().color = Color.white;
                 }
-
-                newOverlappedCell.Item1.Contents.GetComponent<SpriteRenderer>().color = Color.green;
+                
+                // If there was no new majority overlap -> nothing to colour
+                if (newOverlappedCell.Item1 != null) {
+                    newOverlappedCell.Item1.Contents.GetComponent<SpriteRenderer>().color = Color.green;    
+                }
+                
                 prevOverlappedCell = newOverlappedCell;
             }
         }

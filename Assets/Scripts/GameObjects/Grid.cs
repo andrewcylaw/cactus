@@ -1,4 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Numerics;
+using GameLogic;
 using UnityEngine;
+using Quaternion = UnityEngine.Quaternion;
+using Vector3 = UnityEngine.Vector3;
 
 namespace GameObjects {
     
@@ -9,39 +15,41 @@ namespace GameObjects {
         public int rows;
         public int cols;
         public GameObject tile;
-        
+
+        private Dictionary<String, GridCell> lookup; // GridTag -> GridCell
         private GridCell[,] cells { get; set; }
 
-        void Start() {
+        void Awake() {
+            lookup = new Dictionary<String, GridCell>();
             cells = new GridCell[rows, cols];
-            InsertAll(tile);
-            DrawGrid();
+            InitializeGrid(tile);
         }
         
-        // Draws the current grid using whatever is in each GridCell
-        public void DrawGrid(int xOffset=0, int yOffset=0) {
+        // Initialize the grid 
+        private void InitializeGrid(GameObject tile) {
+            Debug.Log("DrawGrid has been called");
             for (int x = 0; x < rows; x++) {
                 for (int y = 0; y < cols; y++) {
-                    cells[x, y].Contents.transform.position = new Vector3(x + xOffset, y + yOffset, 0);
-                    Instantiate(cells[x, y].Contents);
+                    // Instantiate first, then set it to the grid
+                    GameObject newTile = Instantiate(tile, new Vector3(x, y, 0), Quaternion.identity);
+                    newTile.GetComponent<GridTag>().SetTag(x, y);
+                    cells[x, y] = new GridCell(newTile);
+                    lookup.Add(newTile.GetComponent<GridTag>().GetTag(), cells[x, y]);
                 }
             }
         }
-        
-        // Inserts the given GameObject into all cells in this grid
-        public void InsertAll(GameObject obj) {
+
+        // Use the given Collider2D to retrieve the appropriate GridCell
+        public GridCell GetGridCell(Collider2D gridCellCollider) {
+            return lookup[gridCellCollider.transform.gameObject.GetComponent<GridTag>().GetTag()];
+        }
+
+        public void PrintTags() {
             for (int x = 0; x < rows; x++) {
                 for (int y = 0; y < cols; y++) {
-                    Insert(x, y, obj);
+                    Debug.Log("GridCell with tag: " + cells[x,y].Contents.GetComponent<GridTag>());
                 }
             }
-        }
-        
-        // Inserts the given GameObject into the cell located at x, y on the grid
-        public void Insert(int x, int y, GameObject obj) {
-            GridCell gridCell = cells[x, y] == null ? new GridCell() : cells[x, y];
-            gridCell.Contents = obj;
-            cells.SetValue(gridCell, x, y);
         }
         
         // Future methods
