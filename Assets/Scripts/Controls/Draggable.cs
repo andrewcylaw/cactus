@@ -16,6 +16,11 @@ namespace Controls {
         // Detects whether something is being highlighted (and what it is)
         private GridCell overlappedCell;
 
+        // TODO:
+        /*   - remove highlight upon snapping
+         *   - filter to not highlight squares that are already occupied
+         *   - cannot re-drag after specific scenarios (eg, day is over)
+         */
 
         public void Start() {
             gameManager = FindObjectOfType<GameManager>();
@@ -23,20 +28,20 @@ namespace Controls {
             noFilter = new ContactFilter2D();
         }
 
+        // Allows for dragging anywhere on the clicked GameObject
         public void OnMouseDown() {
             initClickPosition = gameObject.transform.position - GetMousePosition();
         }
 
+        // Allows for dragging + showing the GridCell that this GameObject will snap to
         public void OnMouseDrag() {
-            List<Collider2D> overlap = new List<Collider2D>();
             transform.position = GetMousePosition() + initClickPosition;
             
-            // Detect the GridCell that this object is currently hovering over
-            // TODO - filter that checks for the class GridCell and other game logic later
+            List<Collider2D> overlap = new List<Collider2D>();
             int numOverlap = mainCollider.OverlapCollider(noFilter.NoFilter(), overlap);
-            
             GridCell newOverlappedCell = default;
             float largestOverlapAmt = default; // "largest" = most negative number
+            
             if (numOverlap > 0) {
                 // Find the Collider2D with the most overlap
                 for (int i = 0; i < numOverlap; i++) {
@@ -59,8 +64,9 @@ namespace Controls {
             }
         }
 
+        // Snaps the dragged object to the nearest GridCell on mouse release
         public void OnMouseUp() {
-            Debug.Log("Mouse was released");
+            transform.position = overlappedCell.Contents.transform.position;
         }
 
         // Returns the position of the mouse on the screen right now

@@ -21,6 +21,9 @@ namespace GameLogic {
             } else {
                 _instance = this;
             }
+            
+            gameGrid.InitializeGrid(gameGrid.tile, -7.5f, -3.5f);
+            gameGrid.PrintTags();
         }
 
         

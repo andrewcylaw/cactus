@@ -22,15 +22,14 @@ namespace GameObjects {
         void Awake() {
             lookup = new Dictionary<String, GridCell>();
             cells = new GridCell[rows, cols];
-            InitializeGrid(tile);
         }
         
         // Initialize the grid 
-        private void InitializeGrid(GameObject tile) {
+        public void InitializeGrid(GameObject tile, float xOffset=0, float yOffset=0) {
             for (int x = 0; x < rows; x++) {
                 for (int y = 0; y < cols; y++) {
                     // Instantiate first, then set it to the grid
-                    GameObject newTile = Instantiate(tile, new Vector3(x, y, 0), Quaternion.identity);
+                    GameObject newTile = Instantiate(tile, new Vector3(x + xOffset, y + yOffset, 0), Quaternion.identity);
                     newTile.GetComponent<GridTag>().SetTag(x, y);
                     cells[x, y] = new GridCell(newTile);
                     lookup.Add(newTile.GetComponent<GridTag>().GetTag(), cells[x, y]);
