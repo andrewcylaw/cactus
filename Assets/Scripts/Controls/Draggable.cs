@@ -14,7 +14,7 @@ namespace Controls {
         private Collider2D mainCollider;
 
         // Detects whether something is being highlighted (and what it is)
-        private (GridCell, float) prevOverlappedCell;
+        private GridCell overlappedCell;
 
 
         public void Start() {
@@ -28,8 +28,6 @@ namespace Controls {
         }
 
         public void OnMouseDrag() {
-            gameManager.gameGrid.PrintTags();
-            
             List<Collider2D> overlap = new List<Collider2D>();
             transform.position = GetMousePosition() + initClickPosition;
             
@@ -37,33 +35,29 @@ namespace Controls {
             // TODO - filter that checks for the class GridCell and other game logic later
             int numOverlap = mainCollider.OverlapCollider(noFilter.NoFilter(), overlap);
             
-            // send gridcell for dehighlight/newhighlight etc
-            (GridCell, float) newOverlappedCell = default; 
+            GridCell newOverlappedCell = default;
+            float largestOverlapAmt = default; // "largest" = most negative number
             if (numOverlap > 0) {
-                
+                // Find the Collider2D with the most overlap
                 for (int i = 0; i < numOverlap; i++) {
                     float overlapAmount = mainCollider.Distance(overlap[i]).distance;
-                
-                    // Find the Collider2D with the most overlap
-                    if (prevOverlappedCell.Item1 == null || overlapAmount < prevOverlappedCell.Item2 && overlapAmount < newOverlappedCell.Item2) {
-                        newOverlappedCell = (gameManager.gameGrid.GetGridCell(overlap[i]), overlapAmount);
+                    if (overlappedCell == null || overlapAmount < largestOverlapAmt) {
+                        newOverlappedCell = gameManager.gameGrid.GetGridCell(overlap[i]);
+                        largestOverlapAmt = overlapAmount;
                     }
                 }
-            
-                // Deselect our old cell
-                if (prevOverlappedCell.Item1 != null) {
-                    prevOverlappedCell.Item1.Contents.GetComponent<SpriteRenderer>().color = Color.white;
+
+                if (overlappedCell != null && !overlappedCell.Equals(newOverlappedCell)) {
+                    overlappedCell.Contents.GetComponent<SpriteRenderer>().color = Color.white;
+                }
+
+                if (newOverlappedCell != null) {
+                    newOverlappedCell.Contents.GetComponent<SpriteRenderer>().color = Color.green;    
                 }
                 
-                // If there was no new majority overlap -> nothing to colour
-                if (newOverlappedCell.Item1 != null) {
-                    newOverlappedCell.Item1.Contents.GetComponent<SpriteRenderer>().color = Color.green;    
-                }
-                
-                prevOverlappedCell = newOverlappedCell;
+                overlappedCell = newOverlappedCell;
             }
         }
-
 
         public void OnMouseUp() {
             Debug.Log("Mouse was released");

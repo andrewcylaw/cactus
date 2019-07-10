@@ -27,7 +27,6 @@ namespace GameObjects {
         
         // Initialize the grid 
         private void InitializeGrid(GameObject tile) {
-            Debug.Log("DrawGrid has been called");
             for (int x = 0; x < rows; x++) {
                 for (int y = 0; y < cols; y++) {
                     // Instantiate first, then set it to the grid

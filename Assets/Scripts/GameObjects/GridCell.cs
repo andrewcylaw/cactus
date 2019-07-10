@@ -12,6 +12,13 @@ namespace GameObjects {
         public GridCell(GameObject contents) {
             Contents = contents;
         }
-        
+
+        public override bool Equals(object other) {
+            if (other == null || GetType() != other.GetType()) {
+                return false;
+            }
+
+            return other is GridCell otherAsGridCell && otherAsGridCell.Contents == Contents;
+        }
     }
 }
