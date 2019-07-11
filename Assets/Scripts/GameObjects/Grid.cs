@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using GameLogic;
 using UnityEngine;
 using Quaternion = UnityEngine.Quaternion;
@@ -14,38 +13,58 @@ namespace GameObjects {
     public class Grid : MonoBehaviour {
         public int rows;
         public int cols;
-        public GameObject tile;
 
-        private Dictionary<String, GridCell> lookup; // GridTag -> GridCell
+        private Dictionary<GridTag, GridCell> lookup; // GridTag -> GridCell
         private GridCell[,] cells { get; set; }
 
         void Awake() {
-            lookup = new Dictionary<String, GridCell>();
+            lookup = new Dictionary<GridTag, GridCell>();
             cells = new GridCell[rows, cols];
         }
         
         // Initialize the grid 
-        public void InitializeGrid(GameObject tile, float xOffset=0, float yOffset=0) {
+        public void InitializeGrid(GameObject gridCell, GridType gridType, float xOffset=0, float yOffset=0) {
             for (int x = 0; x < rows; x++) {
                 for (int y = 0; y < cols; y++) {
-                    // Instantiate first, then set it to the grid
-                    GameObject newTile = Instantiate(tile, new Vector3(x + xOffset, y + yOffset, 0), Quaternion.identity);
-                    newTile.GetComponent<GridTag>().SetTag(x, y);
-                    cells[x, y] = new GridCell(newTile);
-                    lookup.Add(newTile.GetComponent<GridTag>().GetTag(), cells[x, y]);
+                    /*
+                     *  1. Instantiate new GridCell + set it as child of Grid
+                     *  2. Instantiate the tile associated with the GridCell + set it as child of GridCell 
+                     *  2. Set GridCell's GridTag to our new tag
+                     *  3. Add the new GridCell to the 2D array
+                     */
+                    Vector3 spawnLoc = new Vector3(x + xOffset, y + yOffset, 0);
+                    GameObject instantiatedCell = Instantiate(gridCell, spawnLoc, Quaternion.identity);
+                    GameObject instantiatedTile = Instantiate(instantiatedCell.GetComponent<GridCell>().tile, spawnLoc, Quaternion.identity);
+                    instantiatedCell.transform.parent = gameObject.transform;
+                    instantiatedTile.transform.parent = instantiatedCell.transform;
+                    
+                    instantiatedCell.AddComponent<GridTag>();
+                    GridCell newCell = instantiatedCell.GetComponent<GridCell>();
+                    newCell.SetGridTag(gridType, x, y);
+                    cells[x, y] = newCell;
+                    lookup.Add(newCell.gridTag, cells[x, y]);
                 }
             }
         }
 
         // Use the given Collider2D to retrieve the appropriate GridCell
         public GridCell GetGridCell(Collider2D gridCellCollider) {
-            return lookup[gridCellCollider.transform.gameObject.GetComponent<GridTag>().GetTag()];
+            if (lookup.TryGetValue(gridCellCollider.GetComponentInParent<GridCell>().gridTag,
+                out GridCell outGridCell)) {
+                return outGridCell;
+            }
+
+            return null;
         }
 
+        public Boolean IsGridCell(Collider2D otherCollider) {
+            return otherCollider.GetComponentInParent<GridCell>().gridTag != null;
+        }
+ 
         public void PrintTags() {
             for (int x = 0; x < rows; x++) {
                 for (int y = 0; y < cols; y++) {
-                    Debug.Log("GridCell with tag: " + cells[x,y].Contents.GetComponent<GridTag>());
+                    Debug.Log("GridCell with tag: " + cells[x,y].gridTag);
                 }
             }
         }

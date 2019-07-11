@@ -19,5 +19,33 @@ GameObjects/
 * Project setup, writing basic scripts to generate grid, basic camera movement, planning.
 
 
-click and drag > snap to grid if close enough
-otherwise snap back to beginning position
+Hierarchy:
+```
+GridManager
+ > Grid - GameGrid
+ 	> GridCell    (GameObject and Component)
+ 	   > Tile     (GameObject)
+ 	   > Contents (GameObject)
+ 	   > GridTag  (Component)
+ 	   > ...
+ 	> GridCell
+ 	> ...
+ 	> ...
+
+ > Grid - Inventory Grid
+    > GridCell    (GameObject and Component)
+ 	   > Tile     (GameObject)
+ 	   > Contents (GameObject)
+ 	   > GridTag  (Component)
+ 	   > ...
+ 	> GridCell
+ 	> ...    
+ 	> ...
+```
+
+goal:
+- more than one cactus cannot occupy the same grid
+- perhaps cannot move the cactus after it has been snapped to place?
+
+- more than one cactus - replace? displace? prevent? 
+- should be replace ?

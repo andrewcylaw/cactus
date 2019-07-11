@@ -1,3 +1,4 @@
+using GameLogic;
 using UnityEngine;
 
 namespace GameObjects {
@@ -6,11 +7,22 @@ namespace GameObjects {
      * A cell in a grid.
      * Contains information about what is held here, etc
      */
-    public class GridCell {
-        public GameObject Contents { get; set; }
+    public class GridCell : MonoBehaviour {
+        public GameObject tile;
+        public GameObject contents;
+        
+        public GridTag gridTag => GetComponent<GridTag>();
 
-        public GridCell(GameObject contents) {
-            Contents = contents;
+        public void SetGridTag(GridType gridType, int x, int y) {
+            if (!GetComponent<GridTag>()) {
+                throw new MissingComponentException("GridTag is missing!");
+            }
+            
+            gridTag.SetTag(gridType, x, y);
+        }
+        
+        public bool HasContents() {
+            return contents;
         }
 
         public override bool Equals(object other) {
@@ -18,7 +30,10 @@ namespace GameObjects {
                 return false;
             }
 
-            return other is GridCell otherAsGridCell && otherAsGridCell.Contents == Contents;
+            return other is GridCell otherGridCell
+                   && otherGridCell.tile == tile
+                   && otherGridCell.contents == contents
+                   && otherGridCell.GetComponent<GridTag>() == GetComponent<GridTag>();
         }
     }
 }

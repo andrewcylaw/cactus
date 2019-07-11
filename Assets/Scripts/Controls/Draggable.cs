@@ -2,13 +2,19 @@
 using GameLogic;
 using GameObjects;
 using UnityEngine;
+using Grid = GameObjects.Grid;
 
 namespace Controls {
     public class Draggable : MonoBehaviour {
         
         public Camera mainCamera;
 
-        private GameManager gameManager;
+        // Cactus objects can snap between either grid and have different properties
+        // depending on which grid they snap to
+        private GridManager gridManager;
+        private Grid gameGrid;
+        private Grid inventoryGrid;
+        
         private static ContactFilter2D noFilter;
         private Vector3 initClickPosition;
         private Collider2D mainCollider;
@@ -23,7 +29,9 @@ namespace Controls {
          */
 
         public void Start() {
-            gameManager = FindObjectOfType<GameManager>();
+            gridManager = FindObjectOfType<GridManager>();
+            gameGrid = gridManager.gameGrid;
+            inventoryGrid = gridManager.inventoryGrid;
             mainCollider = GetComponent<Collider2D>();
             noFilter = new ContactFilter2D();
         }
@@ -42,22 +50,30 @@ namespace Controls {
             GridCell newOverlappedCell = default;
             float largestOverlapAmt = default; // "largest" = most negative number
             
+            // TODO ! --- FIX ME
             if (numOverlap > 0) {
                 // Find the Collider2D with the most overlap
                 for (int i = 0; i < numOverlap; i++) {
-                    float overlapAmount = mainCollider.Distance(overlap[i]).distance;
+                    Collider2D curCollider = overlap[i];
+
+                    if (!gridManager.IsGridCell(curCollider)) {
+                        continue;
+                    }
+                    
+                    float overlapAmount = mainCollider.Distance(curCollider).distance;
                     if (overlappedCell == null || overlapAmount < largestOverlapAmt) {
-                        newOverlappedCell = gameManager.gameGrid.GetGridCell(overlap[i]);
+                        // Have to check if GridCell or not 
+                        newOverlappedCell = gridManager.GetGridCell(curCollider);
                         largestOverlapAmt = overlapAmount;
                     }
                 }
 
                 if (overlappedCell != null && !overlappedCell.Equals(newOverlappedCell)) {
-                    overlappedCell.Contents.GetComponent<SpriteRenderer>().color = Color.white;
+                    DeselectGridCell(overlappedCell);
                 }
 
                 if (newOverlappedCell != null) {
-                    newOverlappedCell.Contents.GetComponent<SpriteRenderer>().color = Color.green;    
+                    newOverlappedCell.tile.GetComponent<SpriteRenderer>().color = Color.grey;    
                 }
                 
                 overlappedCell = newOverlappedCell;
@@ -66,7 +82,19 @@ namespace Controls {
 
         // Snaps the dragged object to the nearest GridCell on mouse release
         public void OnMouseUp() {
-            transform.position = overlappedCell.Contents.transform.position;
+            DeselectGridCell(overlappedCell);
+
+            // Replace the contents if already occupied (ie, they switch spots)
+            if (overlappedCell.HasContents()) {
+                overlappedCell.contents.transform.position = transform.position;
+            }
+            
+            transform.position = overlappedCell.tile.transform.position;
+            overlappedCell.contents = transform.gameObject;
+        }
+
+        private static void DeselectGridCell(GridCell gridCell) {
+            gridCell.tile.GetComponent<SpriteRenderer>().color = Color.white;
         }
 
         // Returns the position of the mouse on the screen right now

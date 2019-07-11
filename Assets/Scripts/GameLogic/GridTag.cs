@@ -1,26 +1,25 @@
 ﻿using System;
+using GameObjects;
 using UnityEngine;
 
 namespace GameLogic {
     
-    // Custom component used to tag Grid GameObjects
+    // Custom component used to tag Grid GameObjects.
+    // The tag should not change after the object is instantiated
     public class GridTag : MonoBehaviour {
 
-        public int x { get; set; }
-        public int y { get; set; }
+        public GridType gridType { get; private set; }
+        public int x { get; private set; }
+        public int y { get; private set; }
 
-        public GridTag(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        public void SetTag(int x, int y) {
+        public void SetTag(GridType gridType, int x, int y) {
+            this.gridType = gridType;             
             this.x = x;
             this.y = y;
         }
 
         public String GetTag() {
-            return $"[GridTag] x:{x}, y:{y}";
+            return $"[GridTag] type:{gridType}, x:{x}, y:{y}";
         }
 
         public override string ToString() {
@@ -32,9 +31,10 @@ namespace GameLogic {
                 return false;
             }
             
-            return other is GridTag otherAsGridTag 
-                   && x == otherAsGridTag.x 
-                   && y == otherAsGridTag.y;
+            return other is GridTag otherGridTag 
+                   && otherGridTag.gridType == gridType
+                   && otherGridTag.x == x 
+                   && otherGridTag.y == y;
         }
     }
 }
