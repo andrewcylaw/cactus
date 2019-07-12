@@ -4,7 +4,7 @@ using Grid = GameObjects.Grid;
 
 namespace GameLogic {
     
-    // Is reponsible for methods that interact with specific grids
+    // Is responsible for methods that interact with specific grids
     // Eg, checking which grid a GridCell belongs to, etc 
     public class GridManager : MonoBehaviour {
         public Grid gameGrid;

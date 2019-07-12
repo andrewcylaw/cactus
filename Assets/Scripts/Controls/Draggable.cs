@@ -49,8 +49,7 @@ namespace Controls {
             int numOverlap = mainCollider.OverlapCollider(noFilter.NoFilter(), overlap);
             GridCell newOverlappedCell = default;
             float largestOverlapAmt = default; // "largest" = most negative number
-            
-            // TODO ! --- FIX ME
+
             if (numOverlap > 0) {
                 // Find the Collider2D with the most overlap
                 for (int i = 0; i < numOverlap; i++) {
@@ -73,7 +72,7 @@ namespace Controls {
                 }
 
                 if (newOverlappedCell != null) {
-                    newOverlappedCell.tile.GetComponent<SpriteRenderer>().color = Color.grey;    
+                    newOverlappedCell.tile.GetComponent<SpriteRenderer>().color = Color.grey;
                 }
                 
                 overlappedCell = newOverlappedCell;

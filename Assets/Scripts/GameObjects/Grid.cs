@@ -28,10 +28,13 @@ namespace GameObjects {
                 for (int y = 0; y < cols; y++) {
                     /*
                      *  1. Instantiate new GridCell + set it as child of Grid
-                     *  2. Instantiate the tile associated with the GridCell + set it as child of GridCell 
-                     *  2. Set GridCell's GridTag to our new tag
-                     *  3. Add the new GridCell to the 2D array
+                     *  2. Instantiate the tile associated with the GridCell + set it as child of GridCell
+                     *  3. Set our tile as a property of the GridCell
+                     *  4. Set GridCell's GridTag to our new tag
+                     *  5. Add the new GridCell to the 2D array
                      */
+                    // TODO - instantiate contents if necessary
+                    
                     Vector3 spawnLoc = new Vector3(x + xOffset, y + yOffset, 0);
                     GameObject instantiatedCell = Instantiate(gridCell, spawnLoc, Quaternion.identity);
                     GameObject instantiatedTile = Instantiate(instantiatedCell.GetComponent<GridCell>().tile, spawnLoc, Quaternion.identity);
@@ -41,6 +44,7 @@ namespace GameObjects {
                     instantiatedCell.AddComponent<GridTag>();
                     GridCell newCell = instantiatedCell.GetComponent<GridCell>();
                     newCell.SetGridTag(gridType, x, y);
+                    newCell.tile = instantiatedTile;
                     cells[x, y] = newCell;
                     lookup.Add(newCell.gridTag, cells[x, y]);
                 }
