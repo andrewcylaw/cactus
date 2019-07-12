@@ -14,7 +14,7 @@ namespace GameObjects {
         public int rows;
         public int cols;
 
-        private Dictionary<GridTag, GridCell> lookup; // GridTag -> GridCell
+        private Dictionary<GridTag, GridCell> lookup; // allows lookup of GridTag -> GridCell
         private GridCell[,] cells { get; set; }
 
         void Awake() {
@@ -23,7 +23,8 @@ namespace GameObjects {
         }
         
         // Initialize the grid 
-        public void InitializeGrid(GameObject gridCell, GridType gridType, float xOffset=0, float yOffset=0) {
+        // Perhaps add a Dictionary<(int, int), GameObject> to parameters to indicate content location?
+        public void InitializeGrid(GameObject gridCellObject, GridType gridType, float xOffset=0, float yOffset=0) {
             for (int x = 0; x < rows; x++) {
                 for (int y = 0; y < cols; y++) {
                     /*
@@ -34,20 +35,40 @@ namespace GameObjects {
                      *  5. Add the new GridCell to the 2D array
                      */
                     // TODO - instantiate contents if necessary
-                    
                     Vector3 spawnLoc = new Vector3(x + xOffset, y + yOffset, 0);
-                    GameObject instantiatedCell = Instantiate(gridCell, spawnLoc, Quaternion.identity);
-                    GameObject instantiatedTile = Instantiate(instantiatedCell.GetComponent<GridCell>().tile, spawnLoc, Quaternion.identity);
-                    instantiatedCell.transform.parent = gameObject.transform;
-                    instantiatedTile.transform.parent = instantiatedCell.transform;
                     
+                    // Instantiate cell as GameObject
+                    GameObject instantiatedCell = Instantiate(gridCellObject, spawnLoc, Quaternion.identity);
+                    instantiatedCell.transform.parent = gameObject.transform;
                     instantiatedCell.AddComponent<GridTag>();
-                    GridCell newCell = instantiatedCell.GetComponent<GridCell>();
-                    newCell.SetGridTag(gridType, x, y);
-                    newCell.tile = instantiatedTile;
-                    cells[x, y] = newCell;
-                    lookup.Add(newCell.gridTag, cells[x, y]);
+                    
+                    // Initialize new GridCell + store to grid
+                    GridCell newGridCell = instantiatedCell.GetComponent<GridCell>();
+                    newGridCell.SetGridTag(gridType, x, y);
+                    cells[x, y] = newGridCell;
+                    lookup.Add(newGridCell.gridTag, cells[x, y]);
+                    
+                    // Instantiate Tile as GameObject + store to GridCell
+                    InitializeTile(newGridCell);
+                    
+                    // TODO - Instantiate Contents as GameObject + store to GridCell
+                    InitializeContents(newGridCell);
                 }
+            }
+        }
+
+        // Initializes the tile contained within the given GridCell
+        private void InitializeTile(GridCell gridCell) {
+            GameObject instantiatedTile = Instantiate(gridCell.tile, gridCell.transform.position, Quaternion.identity);
+            instantiatedTile.transform.parent = gridCell.transform;
+            gridCell.tile = instantiatedTile;
+        }
+
+        // TODO
+        // Adds the contents to the GridCell located in this grid at (x,y)
+        private void InitializeContents(GridCell gridCell) {
+            if (gridCell.HasContents()) {
+                
             }
         }
 
